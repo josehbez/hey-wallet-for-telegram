@@ -6,6 +6,8 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
+python-telegram-bot=12.8
+xmlrpclib101 = {file = "http://effbot.org/media/downloads/xmlrpclib-1.0.1.zip"}
 
 [requires]
 python_version = "3.6"
