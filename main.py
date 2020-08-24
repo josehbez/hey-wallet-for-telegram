@@ -2,12 +2,16 @@
 import logging
 from telegram.ext import Updater
 
-from hey_wallet import HeyWallet
+from handler.base import BaseHandler
+from providers.maxsbiz import MSBHeyWallet
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+
+import sys
+sys.path.append(".")
 
 
 def main():
@@ -15,7 +19,7 @@ def main():
     # Get the dispatcher to register handlers
     dp = updater.dispatcher    
     # set Workflow /start
-    dp.add_handler(HeyWallet().handler())
+    dp.add_handler(BaseHandler().handler())
     # Start the Bot
     updater.start_polling()
     # Run the bot until you press Ctrl-C or the process receives SIGINT,
