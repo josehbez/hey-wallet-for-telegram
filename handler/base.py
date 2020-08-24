@@ -1,5 +1,5 @@
 import logging
-
+import json
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, 
                         InlineKeyboardButton, InlineKeyboardMarkup)
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
@@ -124,9 +124,21 @@ class BaseHandler:
         return self.END
 
 
-    def msg_post(self, update, context,  **args):
+    def reply_text(self, update, context,  **args):
         if getattr(update.message, 'reply_text',False):
             update.message.reply_text(**args)
         elif getattr(update.callback_query, 'edit_message_text',False):
             update.callback_query.answer()
             update.callback_query.edit_message_text(**args)
+
+    pprint = lambda self, val: print(json.dumps(val,  indent=4)) if isinstance(val, dict) or isinstance(val, list) else print(val)
+
+    def save_data(self, update, context, index, value=None ):
+        if not value: 
+            value = update.message.text
+        context.user_data[index] = value
+        logger.info("User data save:  Key: {} Value: {} ".format(str(index), str(value)))
+    
+    def get_data(self, update, context, index, value=None ):        
+        return context.user_data.get(index, value)
+        
