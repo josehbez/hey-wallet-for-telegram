@@ -64,7 +64,7 @@ class HeyWalletHandler:
                 #    LOGOUT: END,
                 #}
             ),
-            #CallbackQueryHandler(self.welcome, pattern='^' + str(self.base_handler.BUTTON_SIGNIN) + '$'),
+            #CallbackQueryHandler(self.welcome, pattern='^' + str(self.base_handler.CALLBACK_AUTH) + '$'),
             #CallbackQueryHandler(adding_self, pattern='^' + str(ADDING_SELF) + '$'),
             #CallbackQueryHandler(end, pattern='^' + str(END) + '$'),
         ]
@@ -174,7 +174,7 @@ class HeyWalletHandler:
         product_id = update.callback_query.data
         logger.info("Product id: %s " % product_id)
         product_id =''.join( filter( str.isdigit, product_id) ) 
-        self.base_handler.save_data(update, context, index=self.PRODUCT, value=product_id)
+        self.base_handler.set_data(update, context, index=self.PRODUCT, value=product_id)
         self.base_handler.reply_text(update, context, text="Product selected: %s" % product_id)
         return self.WELCOME
 

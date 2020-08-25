@@ -3,7 +3,7 @@ import logging
 from telegram.ext import Updater
 
 from handler.base import BaseHandler
-from providers.maxsbiz import MSBHeyWallet
+from datasource.maxsbiz import MSBHeyWallet
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)

@@ -18,11 +18,11 @@ class MSBHeyWallet:
     def is_auth(self):
         return self.uid
         
-    def auth(self, username, password, database="wallet.maxs.biz", url="https://wallet.maxs.biz"):
-        self.username = username
-        self.password = password
-        self.database = database
-        self.url = url
+    def auth(self, **args):
+        self.username = args.get('username')
+        self.password = args.get('password')
+        self.database = '013c-jh' #args.get('database', 'wallet.maxs.biz')
+        self.url = 'http://localhost:8068'#args.get('url','https://wallet.maxs.biz')
         self.uid = self.common().authenticate(self.database, self.username, self.password, {})
         return self.uid
 

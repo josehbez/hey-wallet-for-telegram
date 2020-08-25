@@ -5,86 +5,87 @@ from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove,
 from telegram.ext import (CommandHandler, MessageHandler, Filters,
                           ConversationHandler, CallbackQueryHandler,
                           )
-from providers.maxsbiz import MSBHeyWallet
-
 logger = logging.getLogger(__name__)
+from utils.session import Session
 
 class SignHandler:
 
     def __init__(self, base_handler):
         self.base_handler = base_handler
 
-    def select_to_add_email_password(self, update, context):
+    def workflow_signin(self, update, context):
         buttons = [
             [
-                InlineKeyboardButton(text='Add email' , callback_data=str(self.base_handler.EMAIL)),
-                InlineKeyboardButton(text='Add password', callback_data=str(self.base_handler.PASSWORD))
+                InlineKeyboardButton(text='Add username' , callback_data=str(self.base_handler.CALLBACK_USERNAME)),
+                InlineKeyboardButton(text='Add password', callback_data=str(self.base_handler.CALLBACK_PASSWORD))
             ], 
             [
-                InlineKeyboardButton(text='Sign In ', callback_data=str(self.base_handler.BUTTON_SIGNIN))
+                InlineKeyboardButton(text='Sign In ', callback_data=str(self.base_handler.CALLBACK_AUTH))
             ]
         ]
-        keyboard = InlineKeyboardMarkup(buttons)
-        if getattr(update.callback_query, 'edit_message_text',False):
-            update.callback_query.answer()
-            text = 'Please choose, ... or /cancel'
-            update.callback_query.edit_message_text(text=text, reply_markup=keyboard)
-        elif getattr(update.message, 'reply_text',False):
-            text = 'Got it! Please select to update.'
-            update.message.reply_text(text=text, reply_markup=keyboard)
-        return self.base_handler.ADD_EMAIL_PASSWORD
-
-    def ask_for_add_email_password(self, update, context):        
-        ep = str(update.callback_query.data)        
-        context.user_data[self.base_handler.UPDATE_EMAIL_PASSWORD] = ep            
-        if ep == str(self.base_handler.EMAIL):
-            ep_kind = "email"
-        else:
-            ep_kind = "password"
-        text = 'Okay, tell me your {}'.format(ep_kind)
-        update.callback_query.answer()
-        update.callback_query.edit_message_text(text=text)
-
-        return self.base_handler.TYPING_EMAIL_PASSWORD
+        keyboard = InlineKeyboardMarkup(buttons)        
+        text = self.base_handler.get_data(
+            update, context,
+            self.base_handler.SIGN_HANDLER_MSG,
+            'Please choose')  + ' ... or /cancel'
         
-        
+        self.base_handler.del_data(
+            update, context,
+            self.base_handler.SIGN_HANDLER_MSG
+        )
+        self.base_handler.reply_text(update, context, text=text, reply_markup=keyboard)
+        return self.base_handler.STATE_SIGNIN
+
+    def ask_for_username(self,update, context):
+        self.base_handler.set_data(update, context,
+            self.base_handler.SIGNIN_ASK_FOR,
+            self.base_handler.CALLBACK_USERNAME
+        )
+        text = '👾 Okay, tell me your  username'
+        self.base_handler.reply_text(update, context, text=text)
+        return self.base_handler.STATE_TYPING_SIGNIN
+
+    def ask_for_password(self, update, context):
+        self.base_handler.set_data(update, context,
+            self.base_handler.SIGNIN_ASK_FOR,
+            self.base_handler.CALLBACK_PASSWORD
+        )
+        text = '🔑 Okay, tell me your  password'
+        self.base_handler.reply_text(update, context, text=text)
+        return self.base_handler.STATE_TYPING_SIGNIN
     
-    def auth(self, update, context):        
-        ep = str(update.callback_query.data)
-        ud = context.user_data
-        ud[self.base_handler.EMAIL] = 'admin' # TODO: Comment
-        ud[self.base_handler.PASSWORD] = 'admin' # TODO: Comment
-        if ud.get(self.base_handler.EMAIL) and ud.get(self.base_handler.PASSWORD):
-            provider = MSBHeyWallet()
-            provider.auth(
-                ud.get(self.base_handler.EMAIL),
-                ud.get(self.base_handler.PASSWORD),
-                '013c-jh',
-                'http://localhost:8068'
-            )
-            if provider.is_auth():
-                self.base_handler.provider = provider                    
-                logger.info(" To return  HEY_WALLET")
-                #update.callback_query.edit_message_text(text="Welcome")
+    def auth(self, update, context):     
+        session = Session.get_from(context.user_data)      
+        text = 'First  add  your  username and password '
+        if session.get_auth_args('password') and session.get_auth_args('username'):
+            session.datasource.auth(**session.auth_args)
+            if session.datasource.is_auth():                
                 self.base_handler.hey_wallet_handler.welcome(update, context)
-                return self.base_handler.HEY_WALLET
+                return self.base_handler.STATE_HEY_WALLET
             else:
-                text = 'Fail auth, update your email or password'
-                update.callback_query.edit_message_text(text=text)
-                return self.select_to_add_email_password(update, context)    
-        
-        text = 'First  add  your  email and password '
-        update.callback_query.edit_message_text(text=text)
-        return self.select_to_add_email_password(update, context)
+                text = 'Fail auth, update your username or password'
 
-        
+        self.base_handler.set_data(
+            update, context,
+            self.base_handler.SIGN_HANDLER_MSG,
+            value=text
+        )
+        return self.workflow_signin(update, context)
 
-
-    def save_email_password(self, update, context):
-        ud = context.user_data
-        if ud[self.base_handler.UPDATE_EMAIL_PASSWORD] == str(self.base_handler.EMAIL):
-            ud[self.base_handler.EMAIL] = update.message.text
-        elif ud[self.base_handler.UPDATE_EMAIL_PASSWORD]== str(self.base_handler.PASSWORD):
-            ud[self.base_handler.PASSWORD] = update.message.text
-        return self.select_to_add_email_password(update, context)
+    def save_typing_signin(self, update, context):
+        sign_ask_for = self.base_handler.get_data(update, context, self.base_handler.SIGNIN_ASK_FOR, None)
+        session = Session.get_from(context.user_data)
+        session_update = False
+        if sign_ask_for and sign_ask_for == self.base_handler.CALLBACK_USERNAME:
+            session.set_auth_args(username= update.message.text)
+            session_update = True
+        elif sign_ask_for and sign_ask_for == self.base_handler.CALLBACK_PASSWORD:
+            session.set_auth_args(password = update.message.text)
+            session_update = True
+        Session.set_from(context.user_data, session)
+        self.base_handler.set_data(update, context, 
+            self.base_handler.SIGN_HANDLER_MSG,
+            'Got it! Please select to update.'
+        )
+        return self.workflow_signin(update, context)
     
