@@ -31,3 +31,13 @@ class Session:
         logger.info(session.__dict__)
         user_data["session"] = session
         return user_data["session"]
+    
+    @staticmethod
+    def del_from(user_data):
+        try:
+            del user_data["session"]
+        except Exception as e:
+            logger.error(e)
+        
+        
+        

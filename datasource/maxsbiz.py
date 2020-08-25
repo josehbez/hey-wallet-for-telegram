@@ -2,6 +2,7 @@ import xmlrpc.client
 import json
 
 class MSBHeyWallet:
+    name = 'Max Services, Biz'
 
     def __init__(self):        
         pass
@@ -94,3 +95,9 @@ class MSBHeyWallet:
                 }],
             )
         return res
+
+    def welcome(self):
+        return ' \- _[{}]({})_'.format(
+                self.name,
+                self.url, 
+            )

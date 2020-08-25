@@ -22,6 +22,10 @@ class BaseHandler:
     # SignHandler
     CALLBACK_USERNAME, CALLBACK_PASSWORD, SIGNIN_ASK_FOR, STATE_SIGNIN, STATE_TYPING_SIGNIN, SIGN_HANDLER_MSG = map(chr, range(100, 106))
 
+    # HeyWalletHandler - prefix HWH_{name}
+    HWH_ASK_FOR, HWH_STATE_TYPING, HWH_INCOME, HWH_EXPENSE, HWH_AMOUNT, HWH_OPERATION, \
+    HWH_PRODUCT_ID, HWH_PRODUCT_NAME, HWH_ACCOUNT_ID, HWH_ACCOUNT_NAME, HWH_DESCRIPTION= range(3000, 3011)
+
     def __init__(self):
         self.sign_handler = SignHandler(self)
         self.hey_wallet_handler = HeyWalletHandler(self)
@@ -118,4 +122,10 @@ class BaseHandler:
 
     def get_data(self, update, context, index, value=None):
         return context.user_data.get(index, value)
-        
+    
+    def from_user(self, udpate, context):
+        if getattr(udpate, 'message')  and getattr(udpate.message, 'from_user'):
+            return getattr(udpate.message, 'from_user')
+        elif getattr(udpate, 'callback_query')  and getattr(udpate.callback_query, 'from_user'):
+            return getattr(udpate.callback_query, 'from_user')
+        return None
