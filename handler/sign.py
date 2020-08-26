@@ -1,5 +1,5 @@
 import logging
-
+import re
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, 
                         InlineKeyboardButton, InlineKeyboardMarkup)
 from telegram.ext import (CommandHandler, MessageHandler, Filters,
@@ -12,15 +12,69 @@ class SignHandler:
 
     def __init__(self, base_handler):
         self.base_handler = base_handler
+    
+    def workflow_connect(self, update, context):
+        buttons = [
+            [
+                InlineKeyboardButton(text='Odoo' , callback_data=self.base_handler.CALLBACK_ODOO_CONNECTOR),
+            ]
+        ]
+        keyboard = InlineKeyboardMarkup(buttons)        
+        text = self.base_handler.get_data(
+            update, context,
+            self.base_handler.SIGN_HANDLER_MSG,
+            'Connect with')  + ' ... or /cancel'
+        
+        self.base_handler.del_data(
+            update, context,
+            self.base_handler.SIGN_HANDLER_MSG
+        )
+        self.base_handler.reply_text(update, context, text=text, reply_markup=keyboard)
+        return self.base_handler.STATE_WORKFLOW_CONNECTOR
+
+    def workflow_odoo_connector(self, update, context):
+        buttons = [
+            [
+                InlineKeyboardButton(text='URL' , callback_data='sign_ask_for_odoo_connector_url'),
+                InlineKeyboardButton(text='DB' , callback_data='sign_ask_for_odoo_connector_db'),
+            ],[
+                InlineKeyboardButton(text='Sign In',callback_data=self.base_handler.CALLBACK_SIGNIN),
+            ]
+        ]
+        keyboard = InlineKeyboardMarkup(buttons)
+        self.base_handler.reply_text(update, context, text="Please choose", reply_markup=keyboard)
+        return self.base_handler.SH_STATE_ASK_FOR
+    
+    def ask_for(self,update, context):
+        data = update.callback_query.data
+        self.base_handler.set_data(update, context,
+            self.base_handler.SIGNIN_ASK_FOR,
+            data
+        )        
+        if data == 'sign_ask_for_odoo_connector_url':
+            data = 'Odoo URL'
+        elif data == 'sign_ask_for_odoo_connector_db':
+            data = 'Odoo database'
+        elif data == 'sign_ask_for_username':
+            data = 'username 👾'
+        elif data == 'sign_ask_for_password':
+            data = 'password 🔑'
+        
+        text = 'Okay, tell me your {}'.format( data)
+        self.base_handler.reply_text(update, context, text=text)
+
+        return self.base_handler.STATE_TYPING_SIGNIN
+
+
 
     def workflow_signin(self, update, context):
         buttons = [
             [
-                InlineKeyboardButton(text='Add username' , callback_data=str(self.base_handler.CALLBACK_USERNAME)),
-                InlineKeyboardButton(text='Add password', callback_data=str(self.base_handler.CALLBACK_PASSWORD))
+                InlineKeyboardButton(text='Add username' , callback_data='sign_ask_for_username'),
+                InlineKeyboardButton(text='Add password', callback_data='sign_ask_for_password')
             ], 
             [
-                InlineKeyboardButton(text='Sign In ', callback_data=str(self.base_handler.CALLBACK_AUTH))
+                InlineKeyboardButton(text='Sign In ', callback_data=self.base_handler.CALLBACK_AUTH)
             ]
         ]
         keyboard = InlineKeyboardMarkup(buttons)        
@@ -34,25 +88,8 @@ class SignHandler:
             self.base_handler.SIGN_HANDLER_MSG
         )
         self.base_handler.reply_text(update, context, text=text, reply_markup=keyboard)
-        return self.base_handler.STATE_SIGNIN
 
-    def ask_for_username(self,update, context):
-        self.base_handler.set_data(update, context,
-            self.base_handler.SIGNIN_ASK_FOR,
-            self.base_handler.CALLBACK_USERNAME
-        )
-        text = '👾 Okay, tell me your  username'
-        self.base_handler.reply_text(update, context, text=text)
-        return self.base_handler.STATE_TYPING_SIGNIN
-
-    def ask_for_password(self, update, context):
-        self.base_handler.set_data(update, context,
-            self.base_handler.SIGNIN_ASK_FOR,
-            self.base_handler.CALLBACK_PASSWORD
-        )
-        text = '🔑 Okay, tell me your  password'
-        self.base_handler.reply_text(update, context, text=text)
-        return self.base_handler.STATE_TYPING_SIGNIN
+        return self.base_handler.SH_STATE_ASK_FOR
     
     def auth(self, update, context):     
         session = Session.get_from(context.user_data)      
@@ -72,20 +109,32 @@ class SignHandler:
         )
         return self.workflow_signin(update, context)
 
-    def save_typing_signin(self, update, context):
+    def save_typing(self, update, context):
         sign_ask_for = self.base_handler.get_data(update, context, self.base_handler.SIGNIN_ASK_FOR, None)
+        if not sign_ask_for:
+            return
+        
         session = Session.get_from(context.user_data)
-        session_update = False
-        if sign_ask_for and sign_ask_for == self.base_handler.CALLBACK_USERNAME:
+
+        go_to = self.workflow_signin(update, context)
+        
+        if re.search('odoo_connector_url$', sign_ask_for):
+            session.set_auth_args(url= update.message.text)
+            go_to = self.workflow_odoo_connector(update, context)
+        elif re.search('odoo_connector_db$', sign_ask_for):
+            session.set_auth_args(database= update.message.text)
+            go_to = self.workflow_odoo_connector(update, context)
+        elif re.search('username$', sign_ask_for):
             session.set_auth_args(username= update.message.text)
-            session_update = True
-        elif sign_ask_for and sign_ask_for == self.base_handler.CALLBACK_PASSWORD:
+        elif re.search('password$', sign_ask_for):
             session.set_auth_args(password = update.message.text)
-            session_update = True
+        
         Session.set_from(context.user_data, session)
-        self.base_handler.set_data(update, context, 
-            self.base_handler.SIGN_HANDLER_MSG,
-            'Got it! Please select to update.'
-        )
-        return self.workflow_signin(update, context)
+
+        #self.base_handler.set_data(update, context, 
+        #    self.base_handler.SIGN_HANDLER_MSG,
+        #    'Got it! Please select to update.'
+        #)
+
+        return go_to
     

@@ -15,12 +15,15 @@ class BaseHandler:
 
     STATE_START, BACK, SIGNIN, SIGNUP, OWNSERVER, TYPING, STATE_HEY_WALLET, STATE_LOGOUT = range(8)
 
-    CALLBACK_SIGNIN, CALLBACK_AUTH = range(100, 102)
+    CALLBACK_SIGNIN, CALLBACK_AUTH , CALLBACK_CONNECT, STATE_WORKFLOW_CONNECTOR, \
+    CALLBACK_ODOO_CONNECTOR, STATE_WORKFLOW_ODOO_CONNECTOR = range(100, 106)
 
     END = ConversationHandler.END
 
     # SignHandler
-    CALLBACK_USERNAME, CALLBACK_PASSWORD, SIGNIN_ASK_FOR, STATE_SIGNIN, STATE_TYPING_SIGNIN, SIGN_HANDLER_MSG = map(chr, range(100, 106))
+    CALLBACK_USERNAME, CALLBACK_PASSWORD, SIGNIN_ASK_FOR,\
+    STATE_SIGNIN, STATE_TYPING_SIGNIN, SIGN_HANDLER_MSG,\
+    SH_STATE_ASK_FOR = map(chr, range(100, 107))
 
     # HeyWalletHandler - prefix HWH_{name}
     HWH_ASK_FOR, HWH_STATE_TYPING, HWH_INCOME, HWH_EXPENSE, HWH_AMOUNT, HWH_OPERATION, \
@@ -41,26 +44,50 @@ class BaseHandler:
                     CallbackQueryHandler(
                         self.button_signin,
                         pattern='^('+str(self.CALLBACK_SIGNIN)+')$'
+                    ),
+                    CallbackQueryHandler(
+                        self.button_connect,
+                        pattern='^('+str(self.CALLBACK_CONNECT)+')$'
                     )
                 ],
-                self.STATE_SIGNIN: [
+                self.STATE_WORKFLOW_CONNECTOR: [
                     CallbackQueryHandler(
-                        self.sign_handler.ask_for_password,
-                        pattern='^('+str(self.CALLBACK_PASSWORD)+')$'
+                        self.sign_handler.workflow_odoo_connector,
+                        pattern='^('+str(self.CALLBACK_ODOO_CONNECTOR)+')$'
+                    )
+                ],
+                #self.STATE_SIGNIN: [
+                #    #CallbackQueryHandler(
+                #    #    self.sign_handler.ask_for_password,
+                #    #    pattern='^('+str(self.CALLBACK_PASSWORD)+')$'
+                #    #),
+                #    # CallbackQueryHandler(
+                #    #    self.sign_handler.ask_for_username,
+                #    #    pattern='^('+str(self.CALLBACK_USERNAME)+')$'
+                #    #),
+                #    CallbackQueryHandler(
+                #        self.sign_handler.auth,
+                #        pattern='^('+str(self.CALLBACK_AUTH)+')$'
+                #    )
+                #],
+                self.STATE_TYPING_SIGNIN: [
+                    MessageHandler(
+                        Filters.text & ~Filters.command, 
+                        self.sign_handler.save_typing
+                    )
+                ],
+                self.SH_STATE_ASK_FOR: [
+                    CallbackQueryHandler(
+                        self.sign_handler.ask_for,
+                        pattern='^sign_ask_for_'
                     ),
-                     CallbackQueryHandler(
-                        self.sign_handler.ask_for_username,
-                        pattern='^('+str(self.CALLBACK_USERNAME)+')$'
+                    CallbackQueryHandler(
+                        self.button_signin,
+                        pattern='^('+str(self.CALLBACK_SIGNIN)+')$'
                     ),
                     CallbackQueryHandler(
                         self.sign_handler.auth,
                         pattern='^('+str(self.CALLBACK_AUTH)+')$'
-                    )
-                ],
-                self.STATE_TYPING_SIGNIN: [
-                    MessageHandler(
-                        Filters.text & ~Filters.command, 
-                        self.sign_handler.save_typing_signin
                     )
                 ],
                 self.STATE_HEY_WALLET: self.hey_wallet_handler.handler(),
@@ -76,7 +103,7 @@ class BaseHandler:
         buttons = [[
             InlineKeyboardButton(text='Sign In',callback_data=str(self.CALLBACK_SIGNIN)),
             #InlineKeyboardButton(text='Sing Up', callback_data=str(self.SIGNUP)),
-            #InlineKeyboardButton(text='Own Server', callback_data=str(self.OWNSERVER))
+            InlineKeyboardButton(text='Connect', callback_data=str(self.CALLBACK_CONNECT))
         ]]
         keyboard = InlineKeyboardMarkup(buttons)
 
@@ -94,6 +121,10 @@ class BaseHandler:
         text = '🙋‍♂️ Bye! I hope we can talk again someday ... or /start'
         self.reply_text(update, context, text=text, reply_markup=ReplyKeyboardRemove())
         return self.END
+
+    def button_connect(self, update, context):
+        Session.get_from(context.user_data)
+        return self.sign_handler.workflow_connect(update, context)
 
     def button_signin( self, update, context): 
         Session.get_from(context.user_data)

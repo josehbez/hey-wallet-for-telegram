@@ -17,12 +17,12 @@ class Odoo:
      
     def is_auth(self):
         return self.uid
-        
+
     def auth(self, **args):
-        self.username = 'jose@heywallet.com'#args.get('username')
-        self.password = 'jose@heywallet.com'#args.get('password')
-        self.database = 'heywallet' #args.get('database', 'wallet.maxs.biz')
-        self.url = 'http://localhost:8068'#args.get('url','https://wallet.maxs.biz')
+        self.username = args.get('username')
+        self.password = args.get('password')
+        self.database = args.get('database', 'wallet.maxs.biz')
+        self.url = args.get('url','https://wallet.maxs.biz')
         self.uid = self.common().authenticate(self.database, self.username, self.password, {})
         return self.uid
 
@@ -95,11 +95,8 @@ class Odoo:
             )
         return res
 
-    #def welcome(self):
-    #    return ' \- _[{}]({})_'.format(
-    #            self.name,
-    #            self.url, 
-    #        )
-
     def name(self):
         return 'Odoo / %s' % self.url
+
+    def white_list(self, url):
+        pass
