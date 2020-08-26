@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class BaseHandler:
 
-    STATE_START, BACK, SIGNIN, SIGNUP, OWNSERVER, TYPING, STATE_HEY_WALLET = range(7)
+    STATE_START, BACK, SIGNIN, SIGNUP, OWNSERVER, TYPING, STATE_HEY_WALLET, STATE_LOGOUT = range(8)
 
     CALLBACK_SIGNIN, CALLBACK_AUTH = range(100, 102)
 
@@ -63,7 +63,8 @@ class BaseHandler:
                         self.sign_handler.save_typing_signin
                     )
                 ],
-                self.STATE_HEY_WALLET: self.hey_wallet_handler.handler()
+                self.STATE_HEY_WALLET: self.hey_wallet_handler.handler(),
+                self.STATE_LOGOUT: [CommandHandler('start', self.start)], 
             },
             fallbacks=[
                 CommandHandler('cancel', self.cancel)

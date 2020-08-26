@@ -64,23 +64,13 @@ class HeyWalletHandler:
                 },
 
                 fallbacks=[
-                    #CallbackQueryHandler(show_data, pattern='^' + str(SHOWING) + '$'),
-                    #CallbackQueryHandler(end_second_level, pattern='^' + str(END) + '$'),
                     CommandHandler('logout', self.logout)
                 ],
 
-                #map_to_parent={
-                #    # After showing data return to top level menu
-                #    SHOWING: SHOWING,
-                #    # Return to top level menu
-                #    END: SELECTING_ACTION,
-                #    # End conversation alltogether
-                #    LOGOUT: END,
-                #}
+                map_to_parent={                
+                    self.base_handler.STATE_LOGOUT: self.base_handler.STATE_LOGOUT,
+                }
             ),
-            #CallbackQueryHandler(self.welcome, pattern='^' + str(self.base_handler.CALLBACK_AUTH) + '$'),
-            #CallbackQueryHandler(adding_self, pattern='^' + str(ADDING_SELF) + '$'),
-            #CallbackQueryHandler(end, pattern='^' + str(END) + '$'),
         ]
     
     
@@ -90,8 +80,8 @@ class HeyWalletHandler:
         user_first_name = user and user.first_name
         session = Session.get_from(context.user_data)
         text = '✨ Welcome *%s* ' % user_first_name or ''
-        if getattr( session.datasource, 'welcome'):
-            text += session.datasource.welcome()
+        #if getattr( session.datasource, 'welcome'):
+        #    text += session.datasource.welcome()
         text += '\n\nTry the command  /help'
 
         self.base_handler.reply_text(update, context, text=text, parse_mode="MarkdownV2")
@@ -121,7 +111,7 @@ class HeyWalletHandler:
             '🏷️ Description: {} \n'\
             '🗃️ Category: {} \n'\
             ''.format(
-                session.datasource.name, 
+                session.datasource.name(), 
                 self.operation(update, context).title(),
                 self.base_handler.get_data(update, context, 
                     self.base_handler.HWH_AMOUNT, 0
@@ -153,9 +143,9 @@ class HeyWalletHandler:
         return self.WELCOME
     
     def logout(self, update, context):
-        Session.del_from(context.user_data)        
-        self.base_handler.start(update, context)
-        return  self.base_handler.STATE_START
+        Session.del_from(context.user_data)
+        self.base_handler.reply_text(update, context, text="Okay, bye. /start")
+        return  self.base_handler.STATE_LOGOUT
     
     def description(self, update, context):
         oper = self.operation(update, context)
@@ -203,7 +193,7 @@ class HeyWalletHandler:
             self.base_handler.del_data(update, context, i)
         if onlyreset:
             return 
-        text ="Operation has been restarted, try /income ,  /expense and /help"
+        text ="Operation has been restarted, try /income ,  /expense or /help"
         self.base_handler.reply_text(update, context, text=text)
         return self.WELCOME
         

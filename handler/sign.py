@@ -57,7 +57,7 @@ class SignHandler:
     def auth(self, update, context):     
         session = Session.get_from(context.user_data)      
         text = 'First  add  your  username and password '
-        if session.get_auth_args('password',  False) and session.get_auth_args('username', False):
+        if session.get_auth_args('password',  True) and session.get_auth_args('username', True):
             session.datasource.auth(**session.auth_args)
             if session.datasource.is_auth():                
                 self.base_handler.hey_wallet_handler.welcome(update, context)

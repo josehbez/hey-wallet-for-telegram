@@ -1,21 +1,36 @@
 
+import sys
+import os
 import logging
-from telegram.ext import Updater
+from dotenv import load_dotenv
+
+from telegram.ext import Updater, PicklePersistence
 
 from handler.base import BaseHandler
-from datasource.maxsbiz import MSBHeyWallet
+from datasource.odoo import Odoo
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 
-import sys
 sys.path.append(".")
 
-
 def main():
-    updater = Updater("1292507662:AAEKz6xPYp-hbdkaT7rx7bnUxMBhTzMtkRg", use_context=True)
+    pp = PicklePersistence(filename='storage/telegram/heywallet')    
+    load_dotenv()
+        
+    token = os.getenv('TELEGRAM_TOKEN', None)
+    
+    if not token:
+        logger.error("Is required TELEGRAM_TOKEN  is generate from BotFather.")  
+        exit()
+
+    updater = Updater(
+        token, 
+        #persistence=pp, 
+        use_context=True
+    )
     # Get the dispatcher to register handlers
     dp = updater.dispatcher    
     # set Workflow /start

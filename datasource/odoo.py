@@ -1,8 +1,7 @@
 import xmlrpc.client
 import json
 
-class MSBHeyWallet:
-    name = 'Max Services, Biz'
+class Odoo:
 
     def __init__(self):        
         pass
@@ -20,9 +19,9 @@ class MSBHeyWallet:
         return self.uid
         
     def auth(self, **args):
-        self.username = args.get('username')
-        self.password = args.get('password')
-        self.database = '013c-jh' #args.get('database', 'wallet.maxs.biz')
+        self.username = 'jose@heywallet.com'#args.get('username')
+        self.password = 'jose@heywallet.com'#args.get('password')
+        self.database = 'heywallet' #args.get('database', 'wallet.maxs.biz')
         self.url = 'http://localhost:8068'#args.get('url','https://wallet.maxs.biz')
         self.uid = self.common().authenticate(self.database, self.username, self.password, {})
         return self.uid
@@ -96,8 +95,11 @@ class MSBHeyWallet:
             )
         return res
 
-    def welcome(self):
-        return ' \- _[{}]({})_'.format(
-                self.name,
-                self.url, 
-            )
+    #def welcome(self):
+    #    return ' \- _[{}]({})_'.format(
+    #            self.name,
+    #            self.url, 
+    #        )
+
+    def name(self):
+        return 'Odoo / %s' % self.url

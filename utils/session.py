@@ -1,6 +1,6 @@
 
 import logging
-from datasource.maxsbiz import MSBHeyWallet
+from datasource.odoo import Odoo
 logger = logging.getLogger(__name__)
 
 class Session:
@@ -21,7 +21,7 @@ class Session:
     def get_from(user_data):
         if "session" not in user_data:
             s = Session()
-            s.datasource = MSBHeyWallet()
+            s.datasource = Odoo()
             user_data["session"] = s
 
         return user_data["session"]
