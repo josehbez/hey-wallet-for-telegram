@@ -18,7 +18,7 @@ sys.path.append(".")
 
 def main():
     pp = PicklePersistence(filename='storage/telegram/heywallet')    
-    load_dotenv()
+    #load_dotenv() 
         
     token = os.getenv('TELEGRAM_TOKEN', None)
     
@@ -28,7 +28,7 @@ def main():
 
     updater = Updater(
         token, 
-        #persistence=pp, 
+        persistence=pp, 
         use_context=True
     )
     # Get the dispatcher to register handlers
