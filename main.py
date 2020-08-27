@@ -17,11 +17,16 @@ logger = logging.getLogger(__name__)
 sys.path.append(".")
 
 def main():
-    pp = PicklePersistence(filename='storage/telegram/heywallet')    
-    load_dotenv() 
-        
-    token = os.getenv('TELEGRAM_TOKEN', None)
     
+    token = os.getenv('TELEGRAM_TOKEN', None)
+    if not token:
+        load_dotenv()
+        token = os.getenv('TELEGRAM_TOKEN', None)
+    
+    pp = None 
+    if os.getenv('ENVIRONMENT', '') == 'DEV':
+        pp = PicklePersistence(filename='storage/telegram/heywallet')
+
     if not token:
         logger.error("Is required TELEGRAM_TOKEN  is generate from BotFather.")  
         exit()
