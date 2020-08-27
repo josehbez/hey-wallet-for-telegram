@@ -116,7 +116,7 @@ class HeyWalletHandler:
                 self.base_handler.get_data(update, context, 
                     self.base_handler.HWH_AMOUNT, 0
                 ), 
-                "{} - {}".format(
+                "{} \- {}".format(
                     self.base_handler.get_data(update, context, 
                         self.base_handler.HWH_ACCOUNT_ID, ''
                     ),
@@ -127,7 +127,7 @@ class HeyWalletHandler:
                 self.base_handler.get_data(update, context, 
                     self.base_handler.HWH_DESCRIPTION, ''
                 ) ,
-                "{} - {}".format(
+                "{} \- {}".format(
                     self.base_handler.get_data(update, context, 
                         self.base_handler.HWH_PRODUCT_ID, ''
                     ),
@@ -139,7 +139,7 @@ class HeyWalletHandler:
         
         if label:
             return text
-        self.base_handler.reply_text(update, context, text=text)
+        self.base_handler.reply_text(update, context, text=text, parse_mode='MarkdownV2')
         return self.WELCOME
     
     def logout(self, update, context):
@@ -231,7 +231,7 @@ class HeyWalletHandler:
                 raise Exception("Failed to register the %s,  try later /done" % oper)
         except Exception as e:
             msg = str(e)
-        self.base_handler.reply_text(update, context, text=msg)
+        self.base_handler.reply_text(update, context, text=msg, parse_mode='MarkdownV2')
         return self.WELCOME
 
     def selected_account(self, update, context):

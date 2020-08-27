@@ -56,20 +56,6 @@ class BaseHandler:
                         pattern='^('+str(self.CALLBACK_ODOO_CONNECTOR)+')$'
                     )
                 ],
-                #self.STATE_SIGNIN: [
-                #    #CallbackQueryHandler(
-                #    #    self.sign_handler.ask_for_password,
-                #    #    pattern='^('+str(self.CALLBACK_PASSWORD)+')$'
-                #    #),
-                #    # CallbackQueryHandler(
-                #    #    self.sign_handler.ask_for_username,
-                #    #    pattern='^('+str(self.CALLBACK_USERNAME)+')$'
-                #    #),
-                #    CallbackQueryHandler(
-                #        self.sign_handler.auth,
-                #        pattern='^('+str(self.CALLBACK_AUTH)+')$'
-                #    )
-                #],
                 self.STATE_TYPING_SIGNIN: [
                     MessageHandler(
                         Filters.text & ~Filters.command, 
@@ -119,6 +105,7 @@ class BaseHandler:
 
     def cancel(self, update, context):        
         text = '🙋‍♂️ Bye! I hope we can talk again someday ... or /start'
+        Session.del_from(context.user_data)
         self.reply_text(update, context, text=text, reply_markup=ReplyKeyboardRemove())
         return self.END
 

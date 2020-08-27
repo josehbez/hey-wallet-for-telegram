@@ -94,13 +94,19 @@ class SignHandler:
     def auth(self, update, context):     
         session = Session.get_from(context.user_data)      
         text = 'First  add  your  username and password '
-        if session.get_auth_args('password',  True) and session.get_auth_args('username', True):
-            session.datasource.auth(**session.auth_args)
-            if session.datasource.is_auth():                
-                self.base_handler.hey_wallet_handler.welcome(update, context)
-                return self.base_handler.STATE_HEY_WALLET
-            else:
+        if session.get_auth_args('password', True) and session.get_auth_args('username', True):
+            try:
+                session.datasource.auth(**session.auth_args)
+                if session.datasource.is_auth():                
+                    self.base_handler.hey_wallet_handler.welcome(update, context)
+                    return self.base_handler.STATE_HEY_WALLET
+                else:
+                    text = 'Fail auth, update your username or password'
+            except Exception as e:
                 text = 'Fail auth, update your username or password'
+                if getattr(session.datasource, 'auth_exception'):
+                    text= session.datasource.auth_exception(e) or text
+                logger.error(str(e))
 
         self.base_handler.set_data(
             update, context,
@@ -116,8 +122,7 @@ class SignHandler:
         
         session = Session.get_from(context.user_data)
 
-        go_to = self.workflow_signin(update, context)
-        
+        go_to = None
         if re.search('odoo_connector_url$', sign_ask_for):
             session.set_auth_args(url= update.message.text)
             go_to = self.workflow_odoo_connector(update, context)
@@ -126,6 +131,8 @@ class SignHandler:
             go_to = self.workflow_odoo_connector(update, context)
         elif re.search('username$', sign_ask_for):
             session.set_auth_args(username= update.message.text)
+        
+    
         elif re.search('password$', sign_ask_for):
             session.set_auth_args(password = update.message.text)
         
@@ -136,5 +143,5 @@ class SignHandler:
         #    'Got it! Please select to update.'
         #)
 
-        return go_to
+        return go_to or self.workflow_signin(update, context)
     

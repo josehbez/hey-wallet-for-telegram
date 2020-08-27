@@ -18,7 +18,7 @@ sys.path.append(".")
 
 def main():
     pp = PicklePersistence(filename='storage/telegram/heywallet')    
-    #load_dotenv() 
+    load_dotenv() 
         
     token = os.getenv('TELEGRAM_TOKEN', None)
     
