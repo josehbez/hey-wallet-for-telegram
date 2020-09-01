@@ -8,7 +8,7 @@ from telegram.ext import (CommandHandler, MessageHandler, Filters,
                           )
 logger = logging.getLogger(__name__)
 from utils.session import Session
-
+from utils.emoji import Emoji
 
 class HeyWalletHandler:
 
@@ -337,7 +337,7 @@ class HeyWalletHandler:
                         if len(keyboardline) <= 1:
                             keyboardline.append(
                                 InlineKeyboardButton(
-                                    l.get('name'), 
+                                    Emoji.add_label_category( l.get('name')), 
                                     callback_data= '{}{}'.format(category_product, l.get('id'))
                                 )
                             )

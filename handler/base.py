@@ -87,7 +87,7 @@ class BaseHandler:
 
     def start(self, update, context):
         buttons = [[
-            InlineKeyboardButton(text='Sign In',callback_data=str(self.CALLBACK_SIGNIN)),
+            #InlineKeyboardButton(text='Sign In',callback_data=str(self.CALLBACK_SIGNIN)),
             #InlineKeyboardButton(text='Sing Up', callback_data=str(self.SIGNUP)),
             InlineKeyboardButton(text='Connect', callback_data=str(self.CALLBACK_CONNECT))
         ]]
