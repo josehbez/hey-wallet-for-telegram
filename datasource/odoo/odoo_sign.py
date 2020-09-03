@@ -31,12 +31,13 @@ class OdooSignHandler(SignHandler):
         return self.base_handler.SH_STATE_ASK_FOR
     
     def auth(self, update, context):     
-        session = Session.get_from(context.user_data)      
+        session = Session.get_from(context.user_data)
         text = 'First  add  your  username and password '
         if session.get_auth_args('password', True) and session.get_auth_args('username', True):
             try:
                 session.datasource.auth(**session.auth_args)
-                if session.datasource.is_auth():                
+                if session.datasource.is_auth():
+                    Session.set_from(context.user_data,session)
                     return session.hey_wallet_handler.welcome(update, context)
                 else:
                     text = 'Fail auth, update your username or password'

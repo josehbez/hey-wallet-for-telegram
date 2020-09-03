@@ -30,3 +30,6 @@ class Log:
     def info(cls, msg, *args, **kwargs):        
         logger.info(msg, *args, **kwargs)
     
+    @classmethod
+    def error(cls, msg, *args, **kwargs):        
+        logger.error(msg, *args, **kwargs)
