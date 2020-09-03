@@ -34,7 +34,8 @@ class Odoo:
         
 
     def auth(self, **args):
-        args = self.demo_creadentials() or args        
+        args = self.demo_creadentials() or args    
+        print(args)
         up = urlparse(args.get(
             'url',
             'https://wallet.maxs.biz'
@@ -133,8 +134,7 @@ class Odoo:
             )
         return res
 
-    def name(self):
-        return '[Odoo](%s) ' % self.url
+    name = lambda self: 'Odoo'
 
     def white_list(self, url):
         pass
