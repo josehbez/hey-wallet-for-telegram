@@ -1,6 +1,6 @@
-# [Hey Wallet Telegram Bot](t.me/HeyWalletBot)
+# [Hey Wallet Telegram Bot](http://t.me/HeyWalletBot)
 
-## [Try: t.me/HeyWalletBot](t.me/HeyWalletBot)
+## [Try: t.me/HeyWalletBot](http://t.me/HeyWalletBot)
 
 ## Intro
 
