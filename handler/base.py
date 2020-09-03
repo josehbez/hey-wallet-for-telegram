@@ -86,10 +86,9 @@ class BaseHandler:
         ]]
         keyboard = InlineKeyboardMarkup(buttons)
 
-        text = 'Hi! My name HeyWalletBot \n\n'\
-        'I\'m your personal finance planner, I will help you:\n' \
-        '💰 Save money, 🧾 Plan  budget and 📝 Track spending. \n'\
-        'You will become your own finance manager.\n\n' \
+        text = 'Hi! I\'m HeyWalletBot \n\n'\
+        'I\'m your personal finance planner and I will help you:\n' \
+        '📝 Track spending,🧾 Plan  budget and 💰 Save money. \n\n'\
         'Are you ready? ... or send /cancel to stop talking to me.'
         
         self.reply_text(update, context, text=text, reply_markup=keyboard)

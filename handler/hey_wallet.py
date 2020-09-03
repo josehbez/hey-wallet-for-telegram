@@ -91,28 +91,28 @@ class HeyWalletHandler:
         #    return session.hey_wallet_handler.help(update, context)
         
         text = 'Track income and expenses\n\n'\
-            '1️ Type operation /income or /expense\n'\
-            '2️ Select the /category\n'\
-            '3️ Write /description\n'\
-            '4 Select /account \n'\
-            '5 /confirm operation \n\n'\
-            'Try /state /reset  /logout \n'
+            '1️) Type operation /income or /expense\n'\
+            '2️) Select /category\n'\
+            '3️) Write /description\n'\
+            '4) Select /account \n'\
+            '5) /confirm operation \n\n'\
+            'Try /state /reset /logout \n'
 
         self.base_handler.reply_text(update, context, text=text)
         return self.WELCOME
 
-    def state(self, update, context, label=False):
-        #session = Session.get_from(context.user_data)
-        #if session.hey_wallet_handler and self.__class__.__name__ == 'HeyWalletHandler':
-        #    return session.hey_wallet_handler.state(update, context,label=label)
+    
+    def state_text(self, update, context):
+        session = Session.get_from(context.user_data)
 
-        text = '🗄️ Data Source: \n'\
+        text = '🗄️ Data Source: {}\n'\
             '🖊️ Operation: {}\n'\
             '💲 Amount: {}\n'\
             '🏦 Account: {} \n'\
             '🏷️ Description: {} \n'\
             '🗃️ Category: {} \n'\
             ''.format(
+                session.datasource.name(),
                 self.operation(update, context).title(),
                 self.base_handler.get_data(update, context, 
                     self.base_handler.HWH_AMOUNT, 0
@@ -137,10 +137,16 @@ class HeyWalletHandler:
                     )
                 )
             )
-        
-        if label:
-            return text
+        return text
+
+    def state(self, update, context):
+        #session = Session.get_from(context.user_data)
+        #if session.hey_wallet_handler and self.__class__.__name__ == 'HeyWalletHandler':
+        #    return session.hey_wallet_handler.state(update, context)
+
+        text = self.state_text(update, context)
         self.base_handler.reply_text(update, context, text=text, parse_mode='MarkdownV2')
+
         return self.WELCOME
     
     @Log.command
@@ -201,18 +207,18 @@ class HeyWalletHandler:
             to = 'expense'
         return to
 
-    def reset(self, update, context, onlyreset=False):
-        #session = Session.get_from(context.user_data)
-        #if session.hey_wallet_handler and self.__class__.__name__ == 'HeyWalletHandler':
-        #    return session.hey_wallet_handler.reset(update, context, onlyreset=onlyreset)
-        
+    def _reset(self, update, context):
         for i in [self.base_handler.HWH_PRODUCT_ID, self.base_handler.HWH_PRODUCT_NAME, 
             self.base_handler.HWH_ACCOUNT_NAME, self.base_handler.HWH_ACCOUNT_ID, 
             self.base_handler.HWH_DESCRIPTION, self.base_handler.HWH_AMOUNT, self.base_handler.HWH_OPERATION, 
             self.base_handler.HWH_ASK_FOR]:
             self.base_handler.del_data(update, context, i)
-        if onlyreset:
-            return 
+
+    def reset(self, update, context):
+        #session = Session.get_from(context.user_data)
+        #if session.hey_wallet_handler and self.__class__.__name__ == 'HeyWalletHandler':
+        #    return session.hey_wallet_handler.reset(update, context)
+        self._reset(update, context)
         text ="Operation has been restarted, try /income ,  /expense or /help"
         self.base_handler.reply_text(update, context, text=text)
         return self.WELCOME
@@ -227,9 +233,9 @@ class HeyWalletHandler:
         msg = "The {} has been recorded\n\n"\
                 "{}\n"\
                 "Record other /income or /expense or get /help".format(
-                    oper, self.state(update, context, label=True),                        
+                    oper, self.state_text(update, context),                        
                 )
-        self.reset(update, context, onlyreset=True)  
+        self._reset(update, context)  
         self.base_handler.reply_text(update, context, text=msg, parse_mode='MarkdownV2')
 
         return self.WELCOME

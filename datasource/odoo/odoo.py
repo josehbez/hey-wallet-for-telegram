@@ -134,8 +134,7 @@ class Odoo:
             )
         return res
 
-    def name(self):
-        return '[Odoo](%s) ' % self.url
+    name = lambda self: 'Odoo'
 
     def white_list(self, url):
         pass

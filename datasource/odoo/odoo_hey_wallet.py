@@ -36,9 +36,9 @@ class OdooHeyWalletHandler(HeyWalletHandler):
                 msg = "The {} has been recorded\n\n"\
                     "{}\n"\
                     "Record other /income or /expense or get /help".format(
-                        oper, self.state(update, context, label=True),                        
+                        oper, self.state_text(update, context),                        
                     )
-                self.reset(update, context, onlyreset=True)
+                self._reset(update, context)
             else:
                 Log.error(req)
                 raise Exception("Failed to register the %s,  try later /done" % oper)
