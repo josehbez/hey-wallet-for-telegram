@@ -17,7 +17,7 @@ Any other idea please create an issue
 ## Connectors 
 
 * ✅ Try (Demo)
-* ✅ [Odoo](http://odoo.com/) you need to have the module installed `msb_hey_wallet` contact [maxs.biz](http://maxs.biz/)
+* ✅ [Odoo](http://odoo.com/) you need to have the module installed `msb_hey_wallet` contact me.
 
 ## Screenshot
 
