@@ -1,10 +1,9 @@
 from handler.hey_wallet import HeyWalletHandler
-from utils.session import Session
-from utils.log import Log
+from utils import Session, Log, Emoji
 from . import Odoo
 from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove, 
                         InlineKeyboardButton, InlineKeyboardMarkup)
-from utils.emoji import Emoji
+
 
 class OdooHeyWalletHandler(HeyWalletHandler):
     def __init__(self, base_handler):

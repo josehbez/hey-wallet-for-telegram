@@ -7,7 +7,7 @@ from telegram.ext import (CommandHandler, MessageHandler, Filters,
                           )
 
 logger = logging.getLogger(__name__)
-from utils.session import Session
+from utils import Session
 
 class SignHandler:
 

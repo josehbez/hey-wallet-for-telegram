@@ -7,9 +7,8 @@ from telegram.ext import (CommandHandler, MessageHandler, Filters,
                           ConversationHandler, CallbackQueryHandler,
                           )
 logger = logging.getLogger(__name__)
-from utils.session import Session
-from utils.emoji import Emoji
-from utils.log import Log
+from utils import Session, Emoji, Log
+
 
 class HeyWalletHandler:
 
@@ -112,7 +111,7 @@ class HeyWalletHandler:
             '🏷️ Description: {} \n'\
             '🗃️ Category: {} \n'\
             ''.format(
-                session.datasource.name(),
+                session.datasource.name() if session.datasource else 'Try',
                 self.operation(update, context).title(),
                 self.base_handler.get_data(update, context, 
                     self.base_handler.HWH_AMOUNT, 0

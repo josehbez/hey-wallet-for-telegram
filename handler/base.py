@@ -7,8 +7,7 @@ from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           )
 from  handler.sign import SignHandler
 from  handler.hey_wallet import HeyWalletHandler
-from utils.session import Session
-from utils.log import Log
+from utils import Session, Log
 from datasource.odoo import OdooSignHandler, OdooHeyWalletHandler, Odoo                          
 
 
@@ -106,7 +105,7 @@ class BaseHandler:
         else:
             session.sign_handler = None
             session.hey_wallet_handler = None
-            session.datasource = Odoo()
+            session.datasource = None
         
         Session.set_from(context.user_data, session)
         
