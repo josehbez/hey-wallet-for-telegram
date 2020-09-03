@@ -9,6 +9,7 @@ from telegram.ext import (CommandHandler, MessageHandler, Filters,
 logger = logging.getLogger(__name__)
 from utils.session import Session
 from utils.emoji import Emoji
+from utils.log import Log
 
 class HeyWalletHandler:
 
@@ -17,7 +18,8 @@ class HeyWalletHandler:
     def __init__(self, base_handler):
         self.base_handler = base_handler
 
-    
+    def dummy(self):
+        raise NotImplementedError
 
     def handler(self):
         return [
@@ -74,18 +76,16 @@ class HeyWalletHandler:
         ]
     
     
-
+    @Log.new_user_authenticated
     def welcome(self, update, context):
         user = self.base_handler.from_user(update, context)
         user_first_name = user and user.first_name
         session = Session.get_from(context.user_data)
         text = '✨ Welcome *%s* ' % user_first_name or ''
-        #if getattr( session.datasource, 'welcome'):
-        #    text += session.datasource.welcome()
         text += '\n\nTry the command  /help'
 
         self.base_handler.reply_text(update, context, text=text, parse_mode="MarkdownV2")
-        return self.WELCOME
+        return self.base_handler.STATE_HEY_WALLET
     
     def help(self, update, context):
         text = 'Track income and expenses\n\n'\
@@ -142,6 +142,7 @@ class HeyWalletHandler:
         self.base_handler.reply_text(update, context, text=text, parse_mode='MarkdownV2')
         return self.WELCOME
     
+    @Log.command
     def logout(self, update, context):
         Session.del_from(context.user_data)
         self.base_handler.reply_text(update, context, text="Okay, bye. /start")

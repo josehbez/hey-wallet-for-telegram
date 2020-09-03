@@ -5,9 +5,12 @@ from telegram import (ReplyKeyboardMarkup, ReplyKeyboardRemove,
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler, CallbackQueryHandler,
                           )
-from  .sign import SignHandler
-from  .hey_wallet import HeyWalletHandler
+from  handler.sign import SignHandler
+from  handler.hey_wallet import HeyWalletHandler
 from utils.session import Session
+from utils.log import Log
+from datasource.odoo import OdooSignHandler, OdooHeyWalletHandler, Odoo                          
+
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +19,7 @@ class BaseHandler:
     STATE_START, BACK, SIGNIN, SIGNUP, OWNSERVER, TYPING, STATE_HEY_WALLET, STATE_LOGOUT = range(8)
 
     CALLBACK_SIGNIN, CALLBACK_AUTH , CALLBACK_CONNECT, STATE_WORKFLOW_CONNECTOR, \
-    CALLBACK_ODOO_CONNECTOR, STATE_WORKFLOW_ODOO_CONNECTOR = range(100, 106)
+    CALLBACK_ODOO_CONNECTOR, STATE_WORKFLOW_ODOO_CONNECTOR, CALLBACK_TRY_CONNECTOR = range(100, 107)
 
     END = ConversationHandler.END
 
@@ -40,26 +43,20 @@ class BaseHandler:
         conv_handler = ConversationHandler(
             entry_points=[CommandHandler('start', self.start)],
             states={
-                self.STATE_START: [
-                    CallbackQueryHandler(
-                        self.button_signin,
-                        pattern='^('+str(self.CALLBACK_SIGNIN)+')$'
-                    ),
-                    CallbackQueryHandler(
-                        self.button_connect,
-                        pattern='^('+str(self.CALLBACK_CONNECT)+')$'
-                    )
-                ],
                 self.STATE_WORKFLOW_CONNECTOR: [
                     CallbackQueryHandler(
-                        self.sign_handler.workflow_odoo_connector,
+                        self.workflow_connector,
                         pattern='^('+str(self.CALLBACK_ODOO_CONNECTOR)+')$'
+                    ),
+                    CallbackQueryHandler(
+                        self.workflow_connector,
+                        pattern='^('+str(self.CALLBACK_TRY_CONNECTOR)+')$'
                     )
                 ],
                 self.STATE_TYPING_SIGNIN: [
                     MessageHandler(
                         Filters.text & ~Filters.command, 
-                        self.sign_handler.save_typing
+                        self.save_typing
                     )
                 ],
                 self.SH_STATE_ASK_FOR: [
@@ -68,11 +65,7 @@ class BaseHandler:
                         pattern='^sign_ask_for_'
                     ),
                     CallbackQueryHandler(
-                        self.button_signin,
-                        pattern='^('+str(self.CALLBACK_SIGNIN)+')$'
-                    ),
-                    CallbackQueryHandler(
-                        self.sign_handler.auth,
+                        self.auth,
                         pattern='^('+str(self.CALLBACK_AUTH)+')$'
                     )
                 ],
@@ -84,12 +77,12 @@ class BaseHandler:
             ],
         )
         return conv_handler
-
+    
+    @Log.new_user
     def start(self, update, context):
         buttons = [[
-            #InlineKeyboardButton(text='Sign In',callback_data=str(self.CALLBACK_SIGNIN)),
-            #InlineKeyboardButton(text='Sing Up', callback_data=str(self.SIGNUP)),
-            InlineKeyboardButton(text='Connect', callback_data=str(self.CALLBACK_CONNECT))
+            InlineKeyboardButton(text='Try',callback_data=self.CALLBACK_TRY_CONNECTOR),
+            InlineKeyboardButton(text='Odoo' , callback_data=self.CALLBACK_ODOO_CONNECTOR),
         ]]
         keyboard = InlineKeyboardMarkup(buttons)
 
@@ -101,7 +94,39 @@ class BaseHandler:
         
         self.reply_text(update, context, text=text, reply_markup=keyboard)
 
-        return self.STATE_START
+        return self.STATE_WORKFLOW_CONNECTOR
+
+    def workflow_connector(self, update, context):
+        connector = update.callback_query.data
+        Session.del_from(context.user_data)
+        session = Session.get_from(context.user_data)
+        if connector == str(self.CALLBACK_ODOO_CONNECTOR):
+            session.sign_handler = OdooSignHandler(self) 
+            session.hey_wallet_handler = OdooHeyWalletHandler(self)
+            session.datasource = Odoo()
+        else:
+            session.sign_handler = None
+            session.hey_wallet_handler = None
+            session.datasource = Odoo()
+        
+        Session.set_from(context.user_data, session)
+        
+        if session.sign_handler:
+            return session.sign_handler.workflow_connector(update, context)
+        
+        return self.sign_handler.workflow_connector(update, context)
+
+    def save_typing(self, update, context):
+        session = Session.get_from(context.user_data)
+        if session.sign_handler:
+            return session.sign_handler.save_typing(update, context)
+        return self.sign_handler.save_typing(update, context)
+    
+    def auth(self, update, context):
+        session = Session.get_from(context.user_data)
+        if session.sign_handler:
+            return session.sign_handler.auth(update, context)
+        return self.sign_handler.auth(update, context)
 
     def cancel(self, update, context):        
         text = '🙋‍♂️ Bye! I hope we can talk again someday ... or /start'
@@ -113,9 +138,9 @@ class BaseHandler:
         Session.get_from(context.user_data)
         return self.sign_handler.workflow_connect(update, context)
 
-    def button_signin( self, update, context): 
-        Session.get_from(context.user_data)
-        return self.sign_handler.workflow_signin(update, context)
+    #def button_signin( self, update, context): 
+    #    Session.get_from(context.user_data)
+    #    return self.sign_handler.workflow_signin(update, context)
 
     def reply_text(self, update, context,  **args):
         if getattr(update.message, 'reply_text',False):

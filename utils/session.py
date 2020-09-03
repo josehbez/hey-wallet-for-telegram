@@ -1,12 +1,14 @@
-
 import logging
-from datasource.odoo import Odoo
+#from datasource.odoo import Odoo
 logger = logging.getLogger(__name__)
+
 
 class Session:
 
-    def __init__(self ):
+    def __init__(self):
         self.datasource = None
+        self.sign_handler = None
+        self.hey_wallet_handler = None
         self.auth_args = {}
 
     def set_auth_args(self, **args):
@@ -20,8 +22,7 @@ class Session:
     @staticmethod
     def get_from(user_data):
         if "session" not in user_data:
-            s = Session()
-            s.datasource = Odoo()
+            s = Session()            
             user_data["session"] = s
 
         return user_data["session"]
@@ -35,6 +36,7 @@ class Session:
     @staticmethod
     def del_from(user_data):
         try:
+            logger.info("Delete session")
             del user_data["session"]
         except Exception as e:
             logger.error(e)
