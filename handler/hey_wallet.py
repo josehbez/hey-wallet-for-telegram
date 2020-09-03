@@ -113,9 +113,9 @@ class HeyWalletHandler:
             ''.format(
                 session.datasource.name() if session.datasource else 'Try',
                 self.operation(update, context).title(),
-                self.base_handler.get_data(update, context, 
+                str(self.base_handler.get_data(update, context, 
                     self.base_handler.HWH_AMOUNT, 0
-                ), 
+                )).replace('.','\.'), 
                 "{} \- {}".format(
                     self.base_handler.get_data(update, context, 
                         self.base_handler.HWH_ACCOUNT_ID, ''

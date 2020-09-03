@@ -3,7 +3,7 @@ version: "3.7"
 services:
   heywallet:
     build: .
-    #environment:
-    #  - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+    environment:
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
     #volumes:
     #    - ./storage:/heywallet/storage
