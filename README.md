@@ -1,39 +1,42 @@
-# [Hey Wallet Telegram Bot](http://t.me/HeyWalletBot)
+<p align="center">    
+  <a href="LICENSE">
+    <img src="https://img.shields.io/github/license/josehbez/hey-wallet-for-telegram?style=flat-square" />
+  </a>
+  <a href="semv.toml">
+    <img src="https://img.shields.io/badge/semv-1.0.1-green"/>
+  </a>
+</p>
+<p align="center">
+  <a href="http://t.me/HeyWalletBot">
+    <img src="https://img.shields.io/badge/Telegram Bot-t.me/HeyWalletBot-blue"/>
+  </a>
+</p>
 
-## [Try: t.me/HeyWalletBot](http://t.me/HeyWalletBot)
+## Hey Wallet for Telegram Bot
 
-## Intro
+It is a gateway that runs on the server to interact with the bot and connects commonly used financial software for to execute operations simply and quickly.
 
-It is a part of the HeyWalletBot project that works with financial software (Wallet, ERPs) with public APIs, the objective is to abstract operations and execute in a simple and fast way.
+* Record of income and expenses
+* Select a category or put a description
+* Select a bank or cash account
 
-* ✅ Record of income and expenses
-
-* ✅ Select a category or put a description
-
-* ✅ Select a bank or cash account
-
-Any other idea please create an issue
 
 ## Connectors 
 
 * ✅ Try (Demo)
-* ✅ [Odoo](http://odoo.com/) you need to have the module installed `msb_hey_wallet` contact me.
+* ✅ [Odoo](http://odoo.com/) you need to have the module installed `msb_hey_wallet`.
 
-## Screenshot
 
-![](static/img/1.png)
+![](preview.gif)
 
-![](static/img/4.png)
+## Run own server
 
-![](static/img/10.png)
-
-## Docker
-
+### Docker 
 ```bash
 export TELEGRAM_TOKEN=TOKEN && docker-compose up -d
 ```
 
-## Pipenv 
+### Pipenv 
 
 ```bash
 pipenv shell 
@@ -41,7 +44,3 @@ pip install -r requirements.tx
 export TELEGRAM_TOKEN=TOKEN
 python main.py
 ```
-
-## License
-
-[MIT](LICENSE)

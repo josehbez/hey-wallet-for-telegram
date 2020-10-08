@@ -38,6 +38,7 @@ class OdooHeyWalletHandler(HeyWalletHandler):
                         oper, self.state_text(update, context),                        
                     )
                 self._reset(update, context)
+                Log.info(req)
             else:
                 Log.error(req)
                 raise Exception("Failed to register the %s,  try later /done" % oper)
@@ -75,7 +76,9 @@ class OdooHeyWalletHandler(HeyWalletHandler):
                 keyboard.append(keyboardline)
             if len(keyboard):
                 reply_markup = InlineKeyboardMarkup(keyboard)
+            Log.info(accounts)
         else: 
+            Log.error(accounts)
             msg = "Could not get accounts, try later /done"
 
         self.base_handler.reply_text(update, context, text=msg, reply_markup=reply_markup)
